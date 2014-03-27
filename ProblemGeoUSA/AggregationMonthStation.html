@@ -7,7 +7,7 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
-<script type="text/javascript" src="../jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="../libs/jquery-1.11.0.min.js"></script>
 <script src="../libs/FileSaver.js"></script>
 
 <div id="vis"></div>
@@ -17,12 +17,58 @@
 
 
     d3.json("../data/allData2003_2004.json",function(error,data){
-        console.log(data);
+      //console.log(data);
+      var allValues = [{},{},{},{},{},{},{},{},{},{},{},{}];
+      var timeParser = d3.time.format("%b %-d, %Y %X %p").parse;
+      var reducedDataSet = {};
 
-        var allDates = [];
-        var timeParser = d3.time.format("%b %-d, %Y %X %p");
+      keys = Object.keys(data);
+     
+      // go through each key 
+      for(l=0; l < keys.length; l++){
+        temp = [{},{},{},{},{},{},{},{},{},{},{},{}];
+        sum = [0,0,0,0,0,0,0,0,0,0,0,0];
+
+        // going through each value under the key 
+        for (i = 0 ; i< data[keys[l]].length; i++){
+          // parse dates, months, hours, values
+            date = timeParser(data[keys[l]][i].date);
+            month = "" + date.getMonth();
+            hour = "" + date.getHours();
+            value = data[keys[l]][i].value;
+
+            temp[month][hour] = value;
+            sum[month] += value;
+
+        }
+
+        //go through each month
+        for (k = 0; k < 12; k++){
+            d = {sum: sum[k], hourly: temp[k]}
+            allValues[k][keys[l]] = d;
+
+
+        }
+         
         
-		// add your source code
+      }
+      //converts array to json friendly 
+      reducedDataSet = {};
+      reducedDataSet["Jan"] = allValues[0];
+      reducedDataSet["Feb"] = allValues[1];
+      reducedDataSet["Mar"] = allValues[2];
+      reducedDataSet["Apr"] = allValues[3];
+      reducedDataSet["May"] = allValues[4];
+      reducedDataSet["Jun"] = allValues[5];
+      reducedDataSet["Jul"] = allValues[6];
+      reducedDataSet["Aug"] = allValues[7];
+      reducedDataSet["Sep"] = allValues[8];
+      reducedDataSet["Oct"] = allValues[9];
+      reducedDataSet["Nov"] = allValues[10];
+      reducedDataSet["Dec"] = allValues[11];
+
+
+
 
         saveToFile(reducedDataSet,"reducedMonthStationHour2003_2004.json")
 
