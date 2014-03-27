@@ -209,7 +209,7 @@ function loadStations(complete) {
 
 function loadStats() {
 
-     d3.json("../data/reducedMonthStationHour2003_2004_NEW.json", function(error,data){
+     d3.json("../data/reducedMonthStationHour2003_2004.json", function(error,data){
         completeDataSet = data;
         //createDetailVis(completeDataSet);
 		
@@ -240,39 +240,6 @@ d3.json("../data/us-named.json", function(error, data) {
 
 //creates bar chart
 var createDetailVis = function(fulldata){
-  //d3.json("../data/reducedMonthStationHour2003_2004.json", function(error,data){
-
-       // console.log(completeDataSet);
-         //go through each key, through each month, through each time, aggregate hourly totals
-            
-        
-    //     keys = Object.keys(data);
-
-    //     // for(l=0; l < keys.length; l++){
-    //     //       // go through each hour
-    //     //       for (j = 0; j<24; j++){
-
-    //     //         if (!allHours[j]) {
-    //     //           allHours[j] = 0;
-    //     //         }
-    //     //         //e = {sum: sum[k], hourly: temp[k]}
-    //     //         allHours[j] += data[keys[l]].hourly[j];
-    //     //       }
-                    
-    //     // }
-
-    //     for (var station_id in data) {
-    //       for (var hr in data[station_id]["hourly"]) {
-    //         var hour = parseInt(hr);
-    //         if (!allHours[hour]) {
-    //           allHours[hour] = 0;
-    //         }
-    //         allHours[hour] += data[station_id]["hourly"][hr];
-    //       }
-    //     }
-
-    //     console.log(allHours);
-
 
 
 
