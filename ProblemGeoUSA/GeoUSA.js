@@ -148,13 +148,17 @@ function loadStations(complete) {
 
         var rScale = d3.scale.linear().domain([0,max_sum]).range([1, 4]);
 
+        var real_data = data.filter(function (d, i) {
+          return projection([d["NSRDB_LON(dd)"],d["NSRDB_LAT (dd)"]]) ;
+        });
+
         // add circles
         var circle = svg.selectAll(".circles")
-        .data(data).enter()
+        .data(real_data).enter()
         .append("circle")
         .attr("r", function (d) { if (!summation[d.USAF]) { return rScale(0); } return rScale(summation[d.USAF]); })
-        .attr("fill", function (d) { if (!summation[d.USAF]) { return "gray"; } return "black"; }) //function(d,i){return d}
-        .attr("transform", function(d){return "translate(" + projection([d.NSRDB_LON,d.NSRDB_LAT]) + ")";})
+        .attr("fill", function (d) { if (!summation[d.USAF]) { return "gray"; } return "black"; }) 
+        .attr("transform", function(d){ return "translate(" + projection([d["NSRDB_LON(dd)"],d["NSRDB_LAT (dd)"]]) + ")";})
         .on("mouseover",tip.show)
         .on("mouseout",tip.hide)
         .on("click", function (d, i) {
@@ -186,23 +190,8 @@ function loadStations(complete) {
                }
            }
        }
-       console.log(hourly_aggregate);
 
         createDetailVis(data);
-       //console.log(hourly_aggregate);
-        //createDetailVis();
-       
-        // circle.append("g")
-        // .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
-        // .append("g");
-
-        // svg.append("rect")
-        // .attr("class", "overlay")
-        // .attr("width", width)
-        // .attr("height", height);
-
-        // svg.attr("transform", function(d) { return "translate(" + d + ")"; });
-        //console.log(data.station);//....map every station to a circle on the map
     });
 }
 
