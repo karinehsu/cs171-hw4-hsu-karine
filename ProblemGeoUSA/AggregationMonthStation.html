@@ -45,7 +45,14 @@
         //go through each month
         for (k = 0; k < 12; k++){
             d = {sum: sum[k], hourly: temp[k]}
-            allValues[k][keys[l]] = d;
+            if (!allValues[k][keys[l]]) {
+
+              allValues[k][keys[l]] = d;
+            }
+            else {
+
+              allValues[k][keys[l]] += d;
+            }
 
 
         }
