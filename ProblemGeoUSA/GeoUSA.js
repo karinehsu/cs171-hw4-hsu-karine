@@ -12,12 +12,20 @@ var margin = {
 var width = 1060 - margin.left - margin.right;
 var height = 800 - margin.bottom - margin.top;
 var centered;
+var barHeight = 20;
 
 var bbVis = {
     x: 100,
     y: 10,
     w: width - 100,
     h: 300
+};
+
+var bbDetail = {
+    x: 100,
+    y: 10,
+    w: width - 100,
+    h: 100
 };
 
 var detailVis = d3.select("#detailVis").append("svg").attr({
@@ -34,20 +42,7 @@ var svg = canvas.append("g").attr({
         transform: "translate(" + margin.left + "," + margin.top + ")"
     });
 
-// for bar chart detail Vis
-var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
 
-var y = d3.scale.linear().range([height, 0]);
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .tickFormat(d3.time.format("%Y-%m"));
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(10);
 
 
 var projection = d3.geo.albersUsa().translate([width / 2, height / 2]);//.precision(.1);
@@ -85,10 +80,10 @@ function zoom() {
 
 function loadStations(complete) {
     d3.csv("../data/NSRDB_StationsMeta.csv",function(error,data){
-        console.log(complete);
-        //tooltip function created
-
-        //summed
+       
+        
+        //console.log(data);
+        // aggregated values for each station
         summation = function(d){
             result = 0;
             arrayOfMonths = new Array(12);
@@ -115,11 +110,10 @@ function loadStations(complete) {
             
         }
 
-        console.log(summation(data[0]), data[0]);
+        //console.log(summation(data[0]), data[0]);
 
-
+        //tooltip function created
         var tip = d3.tip() 
-    
         .attr('class', 'd3-tip')
         .offset([-10, 0])
         .html(function(d) {
@@ -137,7 +131,9 @@ function loadStations(complete) {
         .attr("transform", function(d){return "translate(" + projection([d.NSRDB_LON,d.NSRDB_LAT]) + ")";})
         .on("mouseover",tip.show)
         .on("mouseout",tip.hide)
-        .on("click",clicked);
+        .on("click",createDetailVis());
+
+        //createDetailVis();
        
         // circle.append("g")
         // .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
@@ -158,11 +154,10 @@ function loadStats() {
 
      d3.json("../data/reducedMonthStationHour2003_2004.json", function(error,data){
         completeDataSet= data;
-        console.log(completeDataSet);
-
-	   
+        createDetailVis(completeDataSet);
 		
         loadStations(completeDataSet);
+        
      })
 
 }
@@ -171,12 +166,8 @@ function loadStats() {
 d3.json("../data/us-named.json", function(error, data) {
     //creates map
     var usMap = topojson.feature(data,data.objects.states).features
-    //console.log(usMap);
-    
-    //var screencoord = projection([-71.060168, 42.360024]);
-    //console.log(screencoord);
 
-
+    //add click to zoom 
     svg.selectAll(".country").data(usMap).enter()
     .append("path")
     .attr("d",path)
@@ -184,39 +175,121 @@ d3.json("../data/us-named.json", function(error, data) {
     .on("click",clicked);
     
     loadStats();
-    
-    //zoomToBB();
+
+
 });
 
 
 
 //creates bar chart
-var createDetailVis = function(){
+var createDetailVis = function(fulldata){
+  d3.csv("../data/NSRDB_StationsMeta.csv",function(error,data){
 
-//     x.domain(data.map(function(d) { return d.date; }));
-//     y.domain([0, d3.max(data, function(d) { return d.value; })]);
+        console.log(fulldata);
 
-//     //var chart = d3.select("body")
+    //finds maximum of hourly data per station
+    var max_hourly = function(d){
+            console.log(fulldata);
+            max = 0;
+            array = new Array(12);
+            array[0] =  fulldata["Jan"][d.USAF]
+            array[1] =  fulldata["Feb"][d.USAF]
+            array[2] =  fulldata["Mar"][d.USAF]
+            array[3] =  fulldata["Apr"][d.USAF]
+            array[4] =  fulldata["May"][d.USAF]
+            array[5] =  fulldata["Jun"][d.USAF]
+            array[6] =  fulldata["Jul"][d.USAF]
+            array[7] =  fulldata["Aug"][d.USAF]
+            array[8] =  fulldata["Sep"][d.USAF]
+            array[9] =  fulldata["Oct"][d.USAF]
+            array[10] =  fulldata["Nov"][d.USAF]
+            array[11] =  fulldata["Dec"][d.USAF]
+            
+            //console.log(arrayOfMonths);
+            //iterate through each month
+            //console.log(arrayOfMonths[3].hourly[6]);
+            for (t=0; t<array.length; t++){
 
-  //   svg.append("g")
-  //     .attr("class", "x axis")
-  //     .attr("transform", "translate(0," + height + ")")
-  //     .call(xAxis)
-  //   .selectAll("text")
-  //     .style("text-anchor", "end")
-  //     .attr("dx", "-.8em")
-  //     .attr("dy", "-.55em")
-  //     .attr("transform", "rotate(-90)" );
+              //iterate through each hour 
+               if (array[t] != undefined){
+                console.log(array[t], array[t].hourly[1]);
 
-  // svg.append("g")
-  //     .attr("class", "y axis")
-  //     .call(yAxis)
-  //   .append("text")
-  //     .attr("transform", "rotate(-90)")
-  //     .attr("y", 6)
-  //     .attr("dy", ".71em")
-  //     .style("text-anchor", "end")
-  //     .text("Value ($)");
+                  for (u = 0; u<24; u++){
+                     result = array[t].hourly[u];
+                     console.log(result);
+                     if (result>max)
+                        max = result;
+                  }
+               
+                } 
+            }
+            
+            return max;
+            
+        }
+
+    console.log(max_hourly(completeDataSet));
+    // sets x and y scale
+
+// NEED HELP GETTING HOUR
+    var x = d3.scale.linear().domain([0,23]).range([bbDetail.x,bbDetail.w]);
+
+
+    var y = d3.scale.linear().domain([0,15]).range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+        //.tickFormat(d3.time.format("%Y-%m"));
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .ticks(10);
+
+     detailVis.append("g")
+      .attr("class", "x axis")
+      //.attr("transform", "translate(0," + bbDetail.height + ")")
+      .call(xAxis)
+    .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", "-.55em")
+      .attr("transform", "rotate(-90)" )
+    .append("text")
+    .text("Hours");
+
+   detailVis.append("g")
+      .attr("class", "y axis")
+       .attr("transform", "translate(0," + bbDetail.height + ")")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Aggregated Hourly Values");
+
+    //create bar graph
+
+    var bar = detailVis.selectAll("g")
+    .data(dataSet)
+    .enter().append("g")
+    .attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
+
+    // bar.append("rect")
+    //     //.attr("width", x)
+    //     .attr("height", barHeight - 1)
+    //     .style("fill","steelblue")
+    //     // .attr("x", function(d){})
+    //     // .attr("y", function(d){});
+
+    bar.append("text")
+        .attr("x", function(d) { return x(d) - 3; })
+        .attr("y", barHeight / 2)
+        .attr("dy", ".35em")
+        .text(function(d) { return d; });
+
 
   // svg.selectAll("bar")
   //     .data(data)
@@ -227,24 +300,25 @@ var createDetailVis = function(){
   //     .attr("y", function(d) { return y(d.value); })
   //     .attr("height", function(d) { return height - y(d.value); });
 
+})
 }
 
 
-var updateDetailVis = function(data, name){
+// var updateDetailVis = function(data, name){
   
-}
+// }
 
 
 
-// ZOOMING
-function zoomToBB() {
+// // ZOOMING
+// function zoomToBB() {
     
 
 
-}
+// }
 
-function resetZoom() {
+// function resetZoom() {
     
-}
+// }
 
 
